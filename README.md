@@ -1,2 +1,5 @@
-# TTS-Mod-Backup
-TTS Mod Backup Tool on Mac
+# TTS-Mod-Backup for MacOS
+
+A rewrite of the [TTS Mod Backup](https://www.nexusmods.com/tabletopsimulator/mods/263) tool.
+
+

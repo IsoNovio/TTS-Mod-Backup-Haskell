@@ -2,7 +2,7 @@ module NameCollector where
 
 import Control.Monad
 import Text.JSON
-import qualified JSONDecoder as JS
+import qualified JSONHelper as JS
 
 getSaveName :: JSValue -> Maybe String
 getSaveName = JS.simpleEval

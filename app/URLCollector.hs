@@ -4,7 +4,7 @@ import Data.Char
 import qualified Data.Set as Set
 import Control.Monad.State
 import Text.JSON
-import JSONDecoder as JS
+import JSONHelper as JS
 
 
 ---- ModURLs ----
@@ -29,17 +29,9 @@ toList :: ModURLs -> ModUrlList
 toList (ModURLs bs as is ms ps ts) = (Set.toList bs, Set.toList as, Set.toList is, Set.toList ms, Set.toList ps, Set.toList ts)
 
 
----- URLState and getting URLs ----
+---- find URLs ----
 
 type URLState = State ModURLs
-
-addAssetbundles, addAudio, addImages, addModels, addPDF, addText :: String -> URLState ()
-addAssetbundles url = modify $ \modURLs -> modURLs {assetbundles    = Set.insert url $ assetbundles modURLs}
-addAudio        url = modify $ \modURLs -> modURLs {audio           = Set.insert url $ audio        modURLs}
-addImages       url = modify $ \modURLs -> modURLs {images          = Set.insert url $ images       modURLs}
-addModels       url = modify $ \modURLs -> modURLs {models          = Set.insert url $ models       modURLs}
-addPDF          url = modify $ \modURLs -> modURLs {pdf             = Set.insert url $ pdf          modURLs}
-addText         url = modify $ \modURLs -> modURLs {text            = Set.insert url $ text         modURLs}
 
 findURLs :: JSValue -> ModUrlList
 findURLs jsValue = toList $ eval jsValue `execState` mempty where
@@ -53,7 +45,7 @@ findURLs jsValue = toList $ eval jsValue `execState` mempty where
         ((>> justEmpty) . traverse addURL)
     
     justEmpty = pure ""
-    isURL = (== "http://") . take 7
+    isURL = (== "http") . take 4
     
     addURL (str, a_) = do
         a <- a_
@@ -71,3 +63,11 @@ findURLs jsValue = toList $ eval jsValue `execState` mempty where
                 then addAudio a
             else pure ()
         else pure ()
+    
+    addAssetbundles, addAudio, addImages, addModels, addPDF, addText :: String -> URLState ()
+    addAssetbundles url = modify $ \modURLs -> modURLs {assetbundles    = Set.insert url $ assetbundles modURLs}
+    addAudio        url = modify $ \modURLs -> modURLs {audio           = Set.insert url $ audio        modURLs}
+    addImages       url = modify $ \modURLs -> modURLs {images          = Set.insert url $ images       modURLs}
+    addModels       url = modify $ \modURLs -> modURLs {models          = Set.insert url $ models       modURLs}
+    addPDF          url = modify $ \modURLs -> modURLs {pdf             = Set.insert url $ pdf          modURLs}
+    addText         url = modify $ \modURLs -> modURLs {text            = Set.insert url $ text         modURLs}

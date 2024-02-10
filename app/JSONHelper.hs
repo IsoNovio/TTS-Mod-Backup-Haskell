@@ -1,4 +1,4 @@
-module JSONDecoder where
+module JSONHelper where
 
 import Data.Bifunctor
 import Text.JSON

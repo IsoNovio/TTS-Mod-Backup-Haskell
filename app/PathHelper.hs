@@ -1,4 +1,4 @@
-module PathDecoder where
+module PathHelper where
 
 import System.Environment
 import System.FilePath
@@ -20,6 +20,3 @@ getDefaultBackupPath :: IO FilePath
 getDefaultBackupPath = do
     user <- getEnv "USER"
     pure $ "/Users/" ++ user ++ "/Downloads/"
-
-urlToExtensionlessFileName :: String -> String
-urlToExtensionlessFileName = filter $ \c -> isAlpha c || isDigit c

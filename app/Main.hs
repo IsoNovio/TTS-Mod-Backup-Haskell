@@ -9,66 +9,37 @@ import Data.Maybe
 import Data.Functor
 import Data.Traversable
 import Text.JSON
-import qualified JSONDecoder as JS
-import qualified PathDecoder as Path
+import qualified JSONHelper as JS
+import qualified PathHelper as Path
 import qualified URLCollector as URL
 import qualified NameCollector as Name
+import qualified Backup (backup)
 
 main :: IO ()
 main = do
     libPath <- queryLibPath
+    backupPath <- queryBackupPath
     putStr "\n\n"
 
     modItems <- listModItems libPath
     putStr "\n\n"
 
-    (modNum, modFolderName, backupTgt) <- getBackupTgt modItems
-    putStr "\n\n"
-    
+    choose1 libPath backupPath modItems
+
+choose1 :: FilePath -> FilePath -> [(Int, (ModItem, JSValue))] -> IO ()
+choose1 libPath backupPath modItems = do
+    (modNum, modFolderName, backupTgt) <- getBackupTgt modItems    
     modURLs <- getModURLs backupTgt
-    backupPath_ <- queryBackupPath
-    putStr "\n\n"
+
+    let backupPath_ = backupPath ++ modFolderName ++ "/"
+    Backup.backup libPath backupPath_ modNum modURLs
     
-    backupPath <- createBackupDir backupPath_ modFolderName
-    copyMod libPath backupPath modURLs modNum
-    putStr "\n\n"
-    
-    putStrLn "Backup Finished!"
-
----- copy the mod ----
-
-copyModSubFolder :: FilePath -> FilePath -> String -> [String] -> IO ()
-copyModSubFolder libPath_ backupPath_ subFolderName queryList_ =
-    if queryList_ /= [] then do
-        let queryList = map Path.urlToExtensionlessFileName queryList_
-            libPath = libPath_ ++ subFolderName ++ "/"
-            backupPath = backupPath_ ++ subFolderName ++ "/"
-            ifQueriedThenCopy ql fp = if dropExtension fp `elem` ql then copyFile (libPath ++ fp) (backupPath ++ fp) else pure ()
-        contents <- getDirectoryContents libPath
-        createDirectoryIfMissing False backupPath
-        contents `for` ifQueriedThenCopy queryList >> pure ()
-    else pure ()
-
-copyMod :: FilePath -> FilePath -> URL.ModUrlList -> Int -> IO ()
-copyMod libPath_ backupPath_ (bs_, as_, is_, ms_, ps_, ts_) modNum = do
-    let libPath = libPath_ ++ "Mods/"
-        backupPath = backupPath_ ++ "Mods/"
-    createDirectoryIfMissing False backupPath
-
-    copyModSubFolder libPath backupPath "Assetbundles" bs_
-    copyModSubFolder libPath backupPath "Audio" as_
-    copyModSubFolder libPath backupPath "Images" is_
-    copyModSubFolder libPath backupPath "Models" ms_
-    copyModSubFolder libPath backupPath "PDF" ps_
-    copyModSubFolder libPath backupPath "Text" ts_
-    copyModSubFolder libPath backupPath "Workshop" [show modNum]
-
-createBackupDir :: FilePath -> String -> IO FilePath
-createBackupDir path folderName = do
-    let backupPath = path ++ folderName ++ "/"
-    createDirectoryIfMissing False backupPath
-    pure backupPath
-
+    putStrLn $ "You have backed up " ++ modFolderName
+    putStrLn $ "Do you want to backup another mod? (y/n)"
+    f <- getLine
+    case f of
+        "y" -> choose1 libPath backupPath modItems
+        _ -> pure ()
 
 ---- query directories ----
 
