@@ -5,7 +5,7 @@ import Network.HTTP.Simple
 import Network.HTTP.Types.Header
 import Data.Char (isAlphaNum)
 import Data.ByteString.Lazy as L
-import Control.Exception as X
+-- import Control.Exception as X
 
 contentTypeToExtension :: String -> String
 contentTypeToExtension = Prelude.takeWhile isAlphaNum . Prelude.tail . Prelude.dropWhile (/= '/')

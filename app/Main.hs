@@ -2,14 +2,11 @@
 module Main where
 
 import System.Directory
-import System.FilePath
-import qualified Data.ByteString.Char8 as B8
 import Data.Char
 import Data.Maybe
 import Data.Functor
 import Data.Traversable
 import Text.JSON
-import qualified JSONHelper as JS
 import qualified PathHelper as Path
 import qualified URLCollector as URL
 import qualified NameCollector as Name
@@ -28,13 +25,13 @@ main = do
 
 choose1 :: FilePath -> FilePath -> [(Int, (ModItem, JSValue))] -> IO ()
 choose1 libPath backupPath modItems = do
-    (modNum, modFolderName, backupTgt) <- getBackupTgt modItems    
-    modURLs <- getModURLs backupTgt
+    (backupModNum, backupTgtPath, backupJSON) <- getBackupTgt modItems    
+    modURLs <- getModURLs backupJSON
 
-    let backupPath_ = backupPath ++ modFolderName ++ "/"
-    Backup.backup libPath backupPath_ modNum modURLs
+    let backupPath_ = backupPath ++ backupTgtPath ++ "/"
+    Backup.backup libPath backupPath_ backupModNum modURLs
     
-    putStrLn $ "You have backed up " ++ modFolderName
+    putStrLn $ "You have backed up " ++ backupTgtPath
     putStrLn $ "Do you want to backup another mod? (y/n)"
     f <- getLine
     case f of
@@ -70,7 +67,7 @@ queryBackupPath = do
 
 getModURLs :: JSValue -> IO URL.ModUrlList
 getModURLs jsValue = do
-    let modURLs@(bs, as, is, ms, ps, ts) = URL.findURLs jsValue
+    let modURLs = URL.findURLs jsValue
     return modURLs
 
 getBackupTgt :: [(Int, (ModItem, JSValue))] -> IO (Int, String, JSValue)
@@ -80,10 +77,10 @@ getBackupTgt modItems = do
     if all isDigit ix_ then
         let ix = read ix_
         in case ix `lookup` modItems of
-            Just result@(modItem@(ModItem _ _ modNum), jsValue) -> do
-                putStr "You have optioned to back up : "
+            Just result@(item@(ModItem _ _ num), jsValue) -> do
+                putStr "You have optioned to back up: "
                 printModItem (ix, result)
-                return (modNum, modFolderName modItem, jsValue)
+                return (num, modFolderName item, jsValue)
             Nothing ->
                 let lastIx = length modItems
                 in do
@@ -102,23 +99,23 @@ listModItems :: FilePath -> IO [(Int, (ModItem, JSValue))]
 listModItems path = do
     modItems <- getModItems path
     putStrLn "You have these mods in your TTS library:"
-    modItems `for` printModItem
+    _ <- modItems `for` printModItem
     return modItems
 
 getModItems :: FilePath -> IO [(Int, (ModItem, JSValue))]
 getModItems path =
-    let modPath = path ++ "Mods/Workshop/"
-    in getDirectoryContents modPath <&> map (modPath ++) >>= traverse getModItem <&> catMaybes <&> label 1
+    let path_ = path ++ "Mods/Workshop/"
+    in getDirectoryContents path_ <&> map (path_ ++) >>= traverse getModItem <&> catMaybes <&> label 1
 
 getModItem :: FilePath -> IO (Maybe (ModItem, JSValue))
-getModItem modPath =
-    if Path.isJSON modPath then do
-        json <- readFile modPath
+getModItem path =
+    if Path.isJSON path then do
+        json <- readFile path
         pure $ case decodeStrict json of
                     Error _ -> Nothing
                     Ok jsValue ->
-                        case (Name.getSaveName jsValue, Path.getModNum modPath) of
-                            (Just modName, Just modNum) -> Just (ModItem modPath modName modNum, jsValue)
+                        case (Name.getSaveName jsValue, Path.getModNum path) of
+                            (Just name, Just num) -> Just (ModItem path name num, jsValue)
                             _ -> Nothing
     else pure Nothing
 
