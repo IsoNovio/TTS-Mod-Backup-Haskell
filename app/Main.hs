@@ -42,25 +42,27 @@ choose1 libPath backupPath modItems = do
 
 queryLibPath :: IO FilePath
 queryLibPath = do
+    defaultPath <- Path.getDefaultLibPath
     putStrLn "Where is you TTS library?"
-    putStrLn "Empty means the default location."
+    putStrLn ("If empty, the default location is used:" ++ defaultPath)
     putStrLn "The directory must be valid."
     dir <- getLine
     if dir /= "" then
         if last dir == '/' then pure dir
         else pure $ dir ++ "/"
-    else Path.getDefaultLibPath
+    else pure defaultPath
 
 queryBackupPath :: IO FilePath
 queryBackupPath = do
+    defaultPath <- Path.getDefaultBackupPath
     putStrLn "Where do you want to backup this mod?"
-    putStrLn "Empty means the Downloads folder."
+    putStrLn ("If empty, the Downloads folder is used:" ++ defaultPath)
     putStrLn "The directory must be valid."
     dir <- getLine
     if dir /= "" then
         if last dir == '/' then pure dir
         else pure $ dir ++ "/"
-    else Path.getDefaultBackupPath
+    else pure defaultPath
 
 
 ---- list URLs ----
