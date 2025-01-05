@@ -44,7 +44,7 @@ queryLibPath :: IO FilePath
 queryLibPath = do
     defaultPath <- Path.getDefaultLibPath
     putStrLn "Where is you TTS library?"
-    putStrLn ("If empty, the default location is used:" ++ defaultPath)
+    putStrLn $ "If empty, the default location is used:" ++ defaultPath
     putStrLn "The directory must be valid."
     dir <- getLine
     if dir /= "" then
@@ -56,7 +56,7 @@ queryBackupPath :: IO FilePath
 queryBackupPath = do
     defaultPath <- Path.getDefaultBackupPath
     putStrLn "Where do you want to backup this mod?"
-    putStrLn ("If empty, the Downloads folder is used:" ++ defaultPath)
+    putStrLn $ "If empty, the Downloads folder is used:" ++ defaultPath
     putStrLn "The directory must be valid."
     dir <- getLine
     if dir /= "" then
