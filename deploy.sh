@@ -1,5 +1,5 @@
 #!/bin/bash
-binary_name="TTS-Mod-Backup"
+binary_name="tts-mod-backup"
 destination_dir="/usr/local/bin"
 
 

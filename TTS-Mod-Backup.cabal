@@ -54,7 +54,7 @@ extra-doc-files:    CHANGELOG.md
 common warnings
     ghc-options: -Wall
 
-executable TTS-Mod-Backup
+executable tts-mod-backup
     -- Import common warning flags.
     import:           warnings
 
